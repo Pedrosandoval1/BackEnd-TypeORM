@@ -9,12 +9,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
     // User se está convirtiento en un repository de tyORM para poder utilizarlo
     // tipico CRUD
-    constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+    constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
 
-    async createUser(user:CreateUserDto) {
+    async createUser(user: CreateUserDto) {
         // agregando una condición para que verifique si ya se ha creado o no ese usuario ya que todo username tiene unikey
         const userFount = await this.userRepository.findOne({
-            where:{
+            where: {
                 username: user.username
             }
         })
@@ -35,24 +35,30 @@ export class UsersService {
         return this.userRepository.find()
     }
 
-    getUser(username:string){
+    getUser(username: string) {
         // Lo que hace en la base de datos es buscar por medio de un id yte devulve.
-        try {
-            return this.userRepository.find({
-                where:{
-                    username: ILike(`${username}%`) 
-                }
-               })      
-        } catch (err) {
-            return err
-        }  
+        if (!username) {
+            return new HttpException('User not found', HttpStatus.NOT_FOUND)
+        }
+        return this.userRepository.find({
+            where: {
+                username: ILike(`${username}%`)
+            }
+        })
+
     }
 
-    deleteUser(id:number){
-       return this.userRepository.delete({id})
+    deleteUser(id: number) {
+        if (!id) {
+            return new HttpException('User not found', HttpStatus.NOT_FOUND)
+        }
+        return this.userRepository.delete({ id })
     }
 
-    updateUser(id:number, user:UpdateUserDto){
-        return this.userRepository.update({id},user)
+    updateUser(id: number, user: UpdateUserDto) {
+        if (!id) {
+            return new HttpException('User not found', HttpStatus.NOT_FOUND)
+        }
+        return this.userRepository.update({ id }, user)
     }
 }
